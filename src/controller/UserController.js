@@ -28,6 +28,22 @@ const schemaUpdate = Joi.object({
     .email(),
 }).with('password', 'confirm_password');
 
+exports.getUser = async (req, res) => {
+  const { id } = req.params;
+  if (!re.test(id)) {
+    return res.status(400).json({ message: 'Provide a valid Id' });
+  }
+  try {
+    const user = User.selectById(id);
+    if (!user) {
+      return res.status(400).json({ message: 'User not found, provide a valid Id' });
+    }
+    return res.status(200).json(user);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 exports.createUser = async (req, res) => {
   const {
     username, password, confirm_password, email,
@@ -38,22 +54,6 @@ exports.createUser = async (req, res) => {
   });
   if (error) {
     return res.status(400).json({ message: error.message });
-  }
-  try {
-    const usernameExist = User.selectByUsername(username);
-    if (usernameExist) {
-      return res.status(400).json({ message: 'username in use, provide other' });
-    }
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
-  }
-  try {
-    const emailExist = User.selectByEmail(email);
-    if (emailExist) {
-      return res.status(400).json({ message: 'email in use, provide other' });
-    }
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
   }
 
   try {
@@ -85,14 +85,6 @@ exports.updateUser = async (req, res) => {
   const { value, error } = schemaUpdate.validate({ password, confirm_password, email });
   if (error) {
     return res.status(400).json({ message: error.message });
-  }
-  try {
-    const emailExist = User.selectByEmail(email);
-    if (emailExist) {
-      return res.status(400).json({ message: 'email in use, provide other' });
-    }
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
   }
   const userToUpdate = User.selectById(userId);
   if (!userToUpdate) {

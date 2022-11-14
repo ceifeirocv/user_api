@@ -4,7 +4,9 @@
 
 const httpMocks = require('node-mocks-http');
 
-const { createUser, deleteUser, updateUser } = require('./UserController');
+const {
+  createUser, deleteUser, updateUser, getUser,
+} = require('./UserController');
 
 jest.mock('../models/User');
 
@@ -15,8 +17,59 @@ beforeEach(() => {
   req = httpMocks.createRequest();
   res = httpMocks.createResponse();
 });
+// get user info
 
 // create user
+describe('get user info', () => {
+  it('it should be a method', () => {
+    expect(typeof getUser).toBe('function');
+  });
+  it('should return User not found', async () => {
+    req = {
+      params: {
+        id: '10',
+      },
+    };
+    await getUser(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res._getJSONData()).toEqual({ message: 'User not found, provide a valid Id' });
+  });
+  it('if id not integer should return id error', async () => {
+    req = {
+      params: {
+        id: '1.0',
+      },
+    };
+    await getUser(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res._getJSONData()).toEqual({ message: 'Provide a valid Id' });
+  });
+  it('if id not integer should return id error', async () => {
+    req = {
+      params: {
+        id: '1a0',
+      },
+    };
+    await getUser(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res._getJSONData()).toEqual({ message: 'Provide a valid Id' });
+  });
+  it('should return User informations', async () => {
+    req = {
+      params: {
+        id: '1',
+      },
+    };
+    await getUser(req, res);
+    expect(res.statusCode).toBe(200);
+    expect(res._getJSONData()).toEqual({
+      id: 1,
+      username: 'anyuser',
+      email: 'any@mail.cv',
+    });
+  });
+});
+
 describe('create user', () => {
   it('it should be a method', () => {
     expect(typeof createUser).toBe('function');
@@ -131,7 +184,7 @@ describe('create user', () => {
       },
     };
     await createUser(req, res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(500);
     expect(res._getJSONData()).toEqual({ message: 'username in use, provide other' });
   });
   it('should ask for a valid email (no domain)', async () => {
@@ -139,19 +192,6 @@ describe('create user', () => {
       body: {
         username: 'anyuser',
         email: 'any@mailcv',
-        password: '01234567',
-        confirm_password: '01234567',
-      },
-    };
-    await createUser(req, res);
-    expect(res.statusCode).toBe(400);
-    expect(res._getJSONData()).toEqual({ message: '\"email\" must be a valid email' });
-  });
-  it('should ask for a valid email (no @)', async () => {
-    req = {
-      body: {
-        username: 'anyuser',
-        email: 'anymail.cv',
         password: '01234567',
         confirm_password: '01234567',
       },
@@ -183,7 +223,7 @@ describe('create user', () => {
       },
     };
     await createUser(req, res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(500);
     expect(res._getJSONData()).toEqual({ message: 'email in use, provide other' });
   });
   it('should return user created', async () => {
@@ -325,7 +365,7 @@ describe('update user', () => {
       },
     };
     await updateUser(req, res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(500);
     expect(res._getJSONData()).toEqual({ message: 'email in use, provide other' });
   });
   it('should ask for a longer password', async () => {
