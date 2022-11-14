@@ -57,6 +57,13 @@ class User {
     }
     return { message: `User ${user.username} Updated` };
   }
+
+  static correctPassword(password) {
+    if (password === '01234567') {
+      return true;
+    }
+    return false;
+  }
 }
 
 module.exports = User;
