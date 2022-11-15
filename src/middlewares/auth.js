@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 module.exports = async (req, res, next) => {
-  const authHeader = req.header.authorization;
+  const authHeader = req.headers.authorization;
 
   if (!authHeader) {
     return res.status(401).json({ message: 'provide a token' });
@@ -15,7 +15,7 @@ module.exports = async (req, res, next) => {
     if (err) {
       return res.status(401).json({ message: 'token invalid' });
     }
-    req.userId = decoded.indexOf;
+    req.userId = decoded.id;
     next();
   });
 };

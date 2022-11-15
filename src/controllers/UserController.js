@@ -29,12 +29,12 @@ const schemaUpdate = Joi.object({
 }).with('password', 'confirm_password');
 
 exports.getUser = async (req, res) => {
-  const { id } = req.params;
-  if (!re.test(id)) {
+  const { userId } = req;
+  if (!re.test(userId)) {
     return res.status(400).json({ message: 'Provide a valid Id' });
   }
   try {
-    const user = User.selectById(id);
+    const user = await User.selectById(userId);
     if (!user) {
       return res.status(400).json({ message: 'User not found, provide a valid Id' });
     }
@@ -69,11 +69,11 @@ exports.createUser = async (req, res) => {
   }
 };
 exports.deleteUser = async (req, res) => {
-  const { userId } = req.body;
+  const { userId } = req;
   if (!re.test(userId)) {
     return res.status(400).json({ message: 'Provide a valid Id' });
   }
-  const deletedUser = User.deleteUser(userId);
+  const deletedUser = await User.deleteUser(userId);
   if (!deletedUser) {
     return res.status(400).json({ message: 'User not found, provide a valid Id' });
   }
@@ -86,8 +86,9 @@ exports.updateUser = async (req, res) => {
     return;
   }
   const {
-    userId, email, password, confirm_password,
+    email, password, confirm_password,
   } = req.body;
+  const { userId } = req;
   if (!re.test(userId)) {
     return res.status(400).json({ message: 'Provide a valid Id' });
   }
@@ -95,7 +96,7 @@ exports.updateUser = async (req, res) => {
   if (error) {
     return res.status(400).json({ message: error.message });
   }
-  const userToUpdate = User.selectById(userId);
+  const userToUpdate = await User.selectById(userId);
   if (!userToUpdate) {
     return res.status(400).json({ message: 'User not found, provide a valid Id' });
   }
@@ -106,7 +107,7 @@ exports.updateUser = async (req, res) => {
     userToUpdate.email = value.email;
   }
   try {
-    const user = User.updateUser(userId, userToUpdate);
+    const user = await User.updateUser(userId, userToUpdate);
     return res.status(200).json({ message: user.message });
   } catch (err) {
     return res.status(500).json({ message: err.message });

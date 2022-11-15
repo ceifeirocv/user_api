@@ -20,10 +20,9 @@ class User {
     const password_hash = await bcrypt.hash(password, 8);
     try {
       const queryData = await db.query(
-        'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING *',
+        'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING id, username, email',
         [username, email, password_hash],
       );
-      console.log(queryData);
       return { message: `User ${queryData.rows[0].username} Created` };
     } catch (error) {
       if (error) {
@@ -80,7 +79,7 @@ class User {
         'SELECT id, username, email FROM users WHERE id = $1',
         [id],
       );
-      return queryData.raws[0];
+      return queryData.rows[0];
     } catch (error) {
       if (error) {
         return error;
@@ -88,11 +87,30 @@ class User {
     }
   }
 
-  static updateUser(id, user) {
-    if (this.selectByEmail(user.email)) {
+  static async updateUser(id, user) {
+    if (!user.password) {
+      const queryPassword = await db.query(
+        'SELECT password FROM users WHERE id = $1',
+        [id],
+      );
+      user.password = queryPassword.rows[0].password;
+    } else {
+      user.password = await bcrypt.hash(user.password, 8);
+    }
+    const isEmailUsed = await this.selectByEmail(user.email);
+    if (isEmailUsed) {
       throw new Error('email in use, provide other');
     }
-    return { message: `User ${user.username} Updated` };
+
+    try {
+      const queryData = await db.query(
+        'UPDATE users SET email = $1, password = $2 WHERE id = $3 RETURNING username;',
+        [user.email, user.password, id],
+      );
+      return { message: `User ${queryData.rows[0].username} updated` };
+    } catch (error) {
+      return error;
+    }
   }
 
   static async correctPassword(id, password) {
