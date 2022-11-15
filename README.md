@@ -1,0 +1,18 @@
+- Pset-3
+  - Create a nodeJs project (User API)
+  - Add the project to Github
+- User can :
+  - get user info
+  - create an account
+  - update a info
+  - delete a account
+  - Authenticate
+- Requirements:
+  - The API should validate the user input’s
+  - Authentication
+  - Implement JWT authentication on private routes: https://www.npmjs.com/package/jsonwebtoken
+  - Encryption
+    - Use Bcrypt to encrypt and decrypt user password: https://www.npmjs.com/package/bcrypt
+- Bonus:
+  - Deploy on heroku
+  - https://heroku.com/
