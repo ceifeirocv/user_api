@@ -35,15 +35,18 @@ class User {
     return undefined;
   }
 
-  static selectByEmail(email) {
-    if (email === 'used@mail.cv') {
-      return {
-        id: 1,
-        username: 'anyuser',
-        email: 'used@mail.cv',
-      };
+  static async selectByEmail(email) {
+    try {
+      const queryData = await db.query(
+        'SELECT id, username, email FROM users WHERE email = 1$',
+        [email],
+      );
+      return queryData;
+    } catch (error) {
+      if (error) {
+        return error;
+      }
     }
-    return undefined;
   }
 
   static selectByUsername(user) {
