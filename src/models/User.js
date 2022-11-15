@@ -20,6 +20,7 @@ class User {
         'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING *',
         [username, email, password_hash],
       );
+      console.log(queryData);
       return { message: `User ${queryData.rows[0].username} Created` };
     } catch (error) {
       if (error) {
@@ -28,11 +29,18 @@ class User {
     }
   }
 
-  static deleteUser(user_id) {
-    if (user_id === 1) {
-      return { username: 'anyuser' };
+  static async deleteUser(id) {
+    try {
+      const queryData = await db.query(
+        'DELETE FROM users WHERE id = $1 RETURNING id, username, email',
+        [id],
+      );
+      return queryData.rows[0];
+    } catch (error) {
+      if (error) {
+        return error;
+      }
     }
-    return undefined;
   }
 
   static async selectByEmail(email) {
@@ -69,7 +77,7 @@ class User {
         'SELECT id, username, email FROM users WHERE id = $1',
         [id],
       );
-      return queryData;
+      return queryData.raws[0];
     } catch (error) {
       if (error) {
         return error;
