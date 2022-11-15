@@ -6,11 +6,14 @@ const db = require('../config/database');
 class User {
   static async insertUser(user) {
     const { username, email, password } = user;
-    if (this.selectByUsername(username)) {
+
+    const isUsernameUsed = await this.selectByUsername(username);
+    if (isUsernameUsed) {
       throw new Error('username in use, provide other');
     }
 
-    if (this.selectByEmail(email)) {
+    const isEmailUsed = await this.selectByEmail(email);
+    if (isEmailUsed) {
       throw new Error('email in use, provide other');
     }
 
