@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const Joi = require('joi');
 const User = require('../models/User');
 
@@ -9,23 +10,22 @@ const schemaCreate = Joi.object({
     .min(5)
     .max(25)
     .required(),
-
-  password: Joi.string()
-    .min(8)
-    .required(),
-  confirm_password: Joi.ref('password'),
   email: Joi.string()
     .trim()
     .email()
     .required(),
+  password: Joi.string()
+    .min(8)
+    .required(),
+  confirm_password: Joi.ref('password'),
 }).with('password', 'confirm_password');
 const schemaUpdate = Joi.object({
-  password: Joi.string()
-    .min(8),
-  confirm_password: Joi.ref('password'),
   email: Joi.string()
     .trim()
     .email(),
+  password: Joi.string()
+    .min(8),
+  confirm_password: Joi.ref('password'),
 }).with('password', 'confirm_password');
 
 exports.getUser = async (req, res) => {
@@ -45,6 +45,11 @@ exports.getUser = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
+  if (!req.body) {
+    res.status(400).json({ message: 'Provide a Information' });
+    return;
+  }
+
   const {
     username, password, confirm_password, email,
   } = req.body;
@@ -57,7 +62,7 @@ exports.createUser = async (req, res) => {
   }
 
   try {
-    const user = User.insertUser(value);
+    const user = await User.insertUser(value);
     return res.status(201).json({ message: user.message });
   } catch (err) {
     return res.status(500).json({ message: err.message });
@@ -76,6 +81,10 @@ exports.deleteUser = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
+  if (!req.body) {
+    res.status(400).json({ message: 'Provide a Information' });
+    return;
+  }
   const {
     userId, email, password, confirm_password,
   } = req.body;

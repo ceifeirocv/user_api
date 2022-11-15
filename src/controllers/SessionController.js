@@ -5,13 +5,12 @@ const User = require('../models/User');
 require('dotenv').config();
 
 const schemaCreate = Joi.object({
-
-  password: Joi.string()
-    .min(8)
-    .required(),
   email: Joi.string()
     .trim()
     .email()
+    .required(),
+  password: Joi.string()
+    .min(8)
     .required(),
 });
 
