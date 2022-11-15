@@ -24,17 +24,26 @@ exports.createSession = async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 
-  const user = User.selectByEmail(value.email);
-  if (!user) {
-    return res.status(401).json({ message: 'wrong email or password' });
+  try {
+    const user = await User.selectByEmail(value.email);
+    if (!user) {
+      return res.status(401).json({ message: 'wrong email or password' });
+    }
+    try {
+      const isPasswordCorrect = await User.correctPassword(user.id, value.password);
+      if (!isPasswordCorrect) {
+        return res.status(401).json({ message: 'wrong email or password' });
+      }
+      return res.status(201).json({
+        name: user.username,
+        token: jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+          expiresIn: '24h',
+        }),
+      });
+    } catch (err) {
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
-  if (!User.correctPassword(value.password)) {
-    return res.status(401).json({ message: 'wrong email or password' });
-  }
-  return res.status(201).json({
-    name: user.username,
-    token: jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: '24h',
-    }),
-  });
 };

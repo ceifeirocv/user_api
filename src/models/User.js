@@ -38,8 +38,36 @@ class User {
   static async selectByEmail(email) {
     try {
       const queryData = await db.query(
-        'SELECT id, username, email FROM users WHERE email = 1$',
+        'SELECT id, username, email FROM users WHERE email = $1',
         [email],
+      );
+      return queryData.rows[0];
+    } catch (error) {
+      if (error) {
+        return error;
+      }
+    }
+  }
+
+  static async selectByUsername(username) {
+    try {
+      const queryData = await db.query(
+        'SELECT id, username, email FROM users WHERE username = $1',
+        [username],
+      );
+      return queryData.rows[0];
+    } catch (error) {
+      if (error) {
+        return error;
+      }
+    }
+  }
+
+  static async selectById(id) {
+    try {
+      const queryData = await db.query(
+        'SELECT id, username, email FROM users WHERE id = $1',
+        [id],
       );
       return queryData;
     } catch (error) {
@@ -49,28 +77,6 @@ class User {
     }
   }
 
-  static selectByUsername(user) {
-    if (user === 'useduser') {
-      return {
-        id: 1,
-        username: 'useduser',
-        email: 'any@mail.cv',
-      };
-    }
-    return undefined;
-  }
-
-  static selectById(id) {
-    if (id === '1') {
-      return {
-        id: 1,
-        username: 'anyuser',
-        email: 'any@mail.cv',
-      };
-    }
-    return undefined;
-  }
-
   static updateUser(id, user) {
     if (this.selectByEmail(user.email)) {
       throw new Error('email in use, provide other');
@@ -78,11 +84,20 @@ class User {
     return { message: `User ${user.username} Updated` };
   }
 
-  static correctPassword(password) {
-    if (password === '01234567') {
-      return true;
+  static async correctPassword(id, password) {
+    try {
+      const queryData = await db.query(
+        'SELECT password FROM users WHERE id = $1',
+        [id],
+      );
+      if (!queryData.rowCount) return false;
+      const password_hash = queryData.rows[0].password;
+      return await bcrypt.compare(password, password_hash);
+    } catch (error) {
+      if (error) {
+        return error;
+      }
     }
-    return false;
   }
 }
 
